@@ -3,12 +3,12 @@
 namespace Devdot\Wordpress\Plugin\BasePlugin;
 
 abstract class Register {
-    abstract private string $plugin_name; 
+    private static string $plugin_name = ''; 
 
     /**
      * @var array<string,callable>
      */
-    abstract private array $hooks;
+    private array $hooks = [];
 
     public function __invoke(): void
     {
