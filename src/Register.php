@@ -12,7 +12,7 @@ abstract class Register {
     protected array $hooks = [];
 
     /**
-     * @var array<string,callable>
+     * @var array<string,callable|array{class-string,string}>
      */
     protected array $shortcodes = [];
 
@@ -29,10 +29,23 @@ abstract class Register {
         $this->registerShortcodes();
     }
 
+    /**
+     * @param array{class-string,string}|string $callable
+     * @return callable
+     */
+    private function makeCallable(array|string $callable): array|string
+    {
+        if (is_string($callable) && method_exists($this, $callable))
+            return [$this, $callable];
+
+        if (is_callable($callable))
+            return $callable;
+    }
+
     protected function registerHooks(): void
     {
         foreach($this->hooks as $hook => $callable) {
-            add_action($hook, $callable);
+            add_action($hook, $this->makeCallable($callable));
         }
     }
 
@@ -50,7 +63,7 @@ abstract class Register {
     protected function registerShortcodes(): void
     {
         foreach($this->shortcodes as $shortcode => $callable) {
-            add_shortcode($shortcode, $callable);
+            add_shortcode($shortcode, $this->makeCallable($callable));
         }
     }
 }
