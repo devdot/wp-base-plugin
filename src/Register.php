@@ -11,6 +11,11 @@ abstract class Register {
      */
     protected array $hooks = [];
 
+    /**
+     * @var array<string,callable>
+     */
+    protected array $shortcodes = [];
+
     public function __construct(string $pluginFile)
     {
         $this->pluginFile = $pluginFile;
@@ -21,6 +26,7 @@ abstract class Register {
     {
         $this->registerHooks();
         $this->registerMagicHooks();
+        $this->registerShortcodes();
     }
 
     protected function registerHooks(): void
@@ -38,6 +44,13 @@ abstract class Register {
 
         if(method_exists($this, 'deactivate')) {
             register_deactivation_hook($this->pluginFile, [$this, 'deactivate']);
+        }
+    }
+
+    protected function registerShortcodes(): void
+    {
+        foreach($this->shortcodes as $shortcode => $callable) {
+            add_shortcode($shortcode, $callable);
         }
     }
 }
