@@ -12,7 +12,7 @@ abstract class Register {
     protected array $hooks = [];
 
     /**
-     * @var array<string,callable|array{class-string,string}>
+     * @var array<string,Shortcode|callable|array{class-string,string}>
      */
     protected array $shortcodes = [];
 
@@ -33,13 +33,15 @@ abstract class Register {
      * @param array{class-string,string}|string $callable
      * @return callable
      */
-    private function makeCallable(array|string $callable): array|string
+    private function makeCallable(array|string $callable): callable
     {
         if (is_string($callable) && method_exists($this, $callable))
             return [$this, $callable];
 
         if (is_callable($callable))
             return $callable;
+
+        throw new \Exception('Failed to create a callback!');
     }
 
     protected function registerHooks(): void
@@ -63,7 +65,12 @@ abstract class Register {
     protected function registerShortcodes(): void
     {
         foreach($this->shortcodes as $shortcode => $callable) {
-            add_shortcode($shortcode, $this->makeCallable($callable));
+            if(is_subclass_of($callable, Shortcode::class)) {
+                add_shortcode($shortcode, new $callable);
+            }
+            else {
+                add_shortcode($shortcode, $this->makeCallable($callable));
+            }
         }
     }
 }
