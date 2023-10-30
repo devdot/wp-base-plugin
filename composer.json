@@ -1,0 +1,18 @@
+{
+    "name": "devdot/wp-base-plugin",
+    "description": "Base Plugin for Wordpress",
+    "type": "library",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Devdot\\Wordpress\\Plugin\\BasePlugin\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Thomas Kuschan",
+            "email": "mail@thomaskuschan.de"
+        }
+    ],
+    "require": {}
+}
