@@ -16,6 +16,11 @@ abstract class Register {
      */
     protected array $shortcodes = [];
 
+    /**
+     * @var array<int,class-string<AdminPage>>
+     */
+    protected array $adminPages = [];
+
     public function __construct(string $pluginFile)
     {
         $this->pluginFile = $pluginFile;
@@ -24,9 +29,11 @@ abstract class Register {
 
     public function __invoke(): void
     {
-        $this->registerHooks();
         $this->registerMagicHooks();
         $this->registerShortcodes();
+        $this->registerAdminPages();
+
+        $this->registerHooks();
     }
 
     /**
@@ -70,6 +77,28 @@ abstract class Register {
             }
             else {
                 add_shortcode($shortcode, $this->makeCallable($callable));
+            }
+        }
+    }
+
+    protected function registerAdminPages(): void
+    {
+        if (count($this->adminPages) && !isset($this->hooks['admin_menu'])) {
+            $this->hooks['admin_menu'] = [$this, '__callbackRegisterAdminPages'];
+        }
+    }
+
+    public function __callbackRegisterAdminPages(): void
+    {
+        foreach($this->adminPages as $class) {
+            $page = new $class($this->pluginName);
+
+            if (!$page->hasParent()) {
+                add_menu_page($page->pageTitle, $page->menuTitle, $page->capability, $page->slug, $page, $page->iconUrl, $page->position);
+            }
+            else {
+                $parent = new ($class::$parent)($this->pluginName);
+                add_submenu_page($parent->slug, $page->pageTitle, $page->menuTitle, $page->capability, $parent->slug . '-' . $page->slug, $page, $page->position);
             }
         }
     }
